@@ -33,7 +33,7 @@ export default function NotifyButton() {
         };
     }, [showNotify, loading]);
 
-    const handelClickNotificationButton = async () => {
+    const handleClickNotificationButton = async () => {
         setShowNotify((prev) => !prev);
         setNotifications(
             notifications.map((n) => {
@@ -73,7 +73,7 @@ export default function NotifyButton() {
             <button
                 aria-label="查看通知"
                 className="relative focus:outline-none"
-                onClick={handelClickNotificationButton}
+                onClick={handleClickNotificationButton}
             >
                 <span className="text-xl">🔔</span>
                 {unreadCount > 0 && (

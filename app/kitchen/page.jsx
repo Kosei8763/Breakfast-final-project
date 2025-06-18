@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMqttClient } from "@/hooks/useMqttClient";
 import { editOrderStatus, getKitchenOrders } from "@/app/actions/order";
 import { addNotification } from "@/app/actions/notification";
-import { getKitchenOrderTopic } from "@/utils/mqttTopic";
+import { getKitchenOrderTopic, getKitchenReadyOrderTopic } from "@/utils/mqttTopic";
 
 export default function KitchenPage() {
     const [orders, setOrders] = useState([]);
@@ -15,7 +15,11 @@ export default function KitchenPage() {
     });
 
     useEffect(() => {
-        setTopic(getKitchenOrderTopic());
+        const topic = [
+            getKitchenOrderTopic(),
+            getKitchenReadyOrderTopic("#"),
+        ];
+        setTopic(topic);
 
         const fetchOrders = async () => {
             try {
@@ -42,18 +46,24 @@ export default function KitchenPage() {
         if (messages.length === 0) return;
 
         const lastMessage = messages[messages.length - 1];
-        try {
-            const newOrder = JSON.parse(lastMessage.payload);
 
-            setOrders((prev) => {
-                // 檢查是否存在相同 ID 的訂單
-                const exists = prev.some((order) => order.id === newOrder.id);
-                return exists ? prev : [...prev, newOrder];
-            });
-        } catch (err) {
-            console.error("無法解析 MQTT 訊息:", err);
+        const isPrepareOrder = lastMessage.topic.include("preparing");
+
+        if (!isPrepareOrder) {
+            try {
+                const newOrder = JSON.parse(lastMessage.payload);
+
+                setOrders((prev) => {
+                    // 檢查是否存在相同 ID 的訂單
+                    const exists = prev.some((order) => order.id === newOrder.id);
+                    return exists ? prev : [...prev, newOrder];
+                });
+            } catch (err) {
+                console.error("無法解析 MQTT 訊息:", err);
+            }
         }
     }, [messages]);
+
 
     const handleCompleteOrder = async (orderId) => {
         try {
@@ -112,13 +122,27 @@ export default function KitchenPage() {
                 notificationRes = await response.json();
             }
 
-            const readyNotificationTopic = ""; // TODO: 設定 MQTT 主題
+            const readyNotificationTopic = getKitchenReadyOrderTopic();// TODO: 設定 MQTT 主題
 
             // 準備發布 MQTT 訊息
             if (notificationRes && notificationRes.id) {
                 // TODO: 準備要發布的 MQTT 訊息
                 // TODO: 發布 MQTT 訊息
+                const mqttMessage = {
+                    id: notificationRes.id,
+                    title: "訂單",
+                    type: "order",
+                    orderId: orderId,
+                    notificationId: notificationRes.id,
+                    message: `您的訂單 ${orderId.slice(0, 8)} 已準備好囉！`,
+                    status: "READY",
+
+                    timestamp: new Date().toISOString(),
+                }
+
+                publishMessage(readyNotificationTopic, JSON.stringify(mqttMessage));
             }
+
         } catch (error) {
             console.error("完成訂單失敗:", error);
         }

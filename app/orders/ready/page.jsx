@@ -9,6 +9,10 @@ import {
     getOrderById,
     getReadyOrders,
 } from "@/app/actions/order";
+import {
+    getKitchenReadyOrderTopic,
+    getStaffCompletedOrderTopic,
+} from "@/utils/mqttTopic";
 
 export default function ReadyOrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -63,12 +67,12 @@ export default function ReadyOrdersPage() {
                 return exists
                     ? prev
                     : [
-                          ...prev,
-                          {
-                              ...newOrder,
-                              id: newOrder.orderId || newOrder.id,
-                          },
-                      ];
+                        ...prev,
+                        {
+                            ...newOrder,
+                            id: newOrder.orderId || newOrder.id,
+                        },
+                    ];
             });
         } catch (err) {
             console.error("無法解析 MQTT 訊息:", err);
@@ -106,10 +110,20 @@ export default function ReadyOrdersPage() {
         const customerId = orderData.customer?.id;
 
         // TODO: 設定 MQTT 主題
-        const topic = "";
+        const topic = getStaffCompletedOrderTopic(customerId);
         // TODO: 準備發布交易完成的 MQTT 訊息
-
+        const message = JSON.stringify({
+            orderId: orderData.id,
+            customerId: customerId,
+            status: "COMPLETED",
+            completedAt: new Date().toISOString(),
+        });
         // TODO: 發布交易完成的 MQTT 訊息
+        if (publishMessage) {
+            publishMessage(topic, message);
+        } else {
+            console.error("未連線，無法傳送顧客通知");
+        }
     };
 
     return (

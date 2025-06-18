@@ -66,10 +66,34 @@ export default function LoginPage() {
                 )}
                 <div className="mt-6 text-center">
                     <form action="" className="space-y-3">
+                        <InputField
+                            label="電子郵件"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
+                        <InputField
+                            label="密碼"
+                            name="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
                         <button
                             type="submit"
+                            onClick={handleLogin}
+                            disabled={isSubmitting}
+                            className={`w-full bg-pink-500 text-white py-2 px-4 rounded-md shadow hover:bg-pink-600 transition ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        >
+                            {isSubmitting ? "登入中..." : "登入"}
+                        </button>
+
+                        <button
+                            type="button"
                             name="provider"
                             value="google"
+                            onClick={() => { signIn("google") }}
                             className="w-full bg-white text-gray-800 border border-gray-300 py-2 px-4 rounded-md flex items-center justify-center gap-2 shadow hover:bg-gray-50 transition"
                         >
                             <Image
@@ -81,9 +105,10 @@ export default function LoginPage() {
                             使用 Google 登入
                         </button>
                         <button
-                            type="submit"
+                            type="button"
                             name="provider"
                             value="github"
+                            onClick={() => { signIn("github") }}
                             className="w-full bg-white text-gray-800 border border-gray-300 py-2 px-4 rounded-md flex items-center justify-center gap-2 shadow hover:bg-gray-50 transition"
                         >
                             <Image
@@ -95,6 +120,13 @@ export default function LoginPage() {
                             使用 GitHub 登入
                         </button>
                     </form>
+
+                    <p className="mt-6 text-center text-sm text-gray-700">
+                        沒有帳號？{" "}
+                        <Link href="/register" className="text-blue-700 underline font-semibold hover:text-gray-200">
+                            前往註冊
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

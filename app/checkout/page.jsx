@@ -88,7 +88,12 @@ export default function CheckoutPage() {
                 orderData = await response.json();
             }
             // TODO: 發布 MQTT 訊息
-
+            if (publishMessage) {
+                const topic = getOrderCheckoutTopic();
+                publishMessage(topic, JSON.stringify(orderData), { qos: 1 });
+            } else {
+                console.warn("MQTT 尚未連線或 publishMessage 不存在");
+            }
             // 清空購物車
             sessionStorage.removeItem("cart");
             // 回到訂單頁面

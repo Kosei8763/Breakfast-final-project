@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useMqttClient } from "@/hooks/useMqttClient";
 import useUser from "@/hooks/useUser";
 import { editOrderStatus, getCustomerOrder } from "@/app/actions/order";
+import {
+    getKitchenReadyOrderTopic,
+    getAcceptCustomerOrderTopic,
+    getCustomerCancelOrderTopic,
+} from "@/utils/mqttTopic";
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -18,7 +23,12 @@ export default function OrdersPage() {
         if (loading) {
             return;
         }
-        setTopic(getKitchenReadyOrderTopic("#"));
+        const topic = [
+            getAcceptCustomerOrderTopic("#"),
+            getKitchenReadyOrderTopic("#"),
+        ];
+
+        setTopic(topic);
 
         const getOrders = async () => {
             try {
@@ -120,10 +130,16 @@ export default function OrdersPage() {
             );
 
             // 發布訂單取消的 MQTT 訊息
-            const topic = ""; // TODO: 設定 MQTT 主題
+            const topic = getCustomerCancelOrderTopic(); // TODO: 設定 MQTT 主題
             // TODO: 準備訊息內容
-
+            const message = JSON.stringify({
+                orderId,
+                status: "CANCELLED",
+                timestamp: new Date().toISOString(),
+            });
             // TODO: 發布 MQTT 訊息
+            publishMessage(topic, message);
+
         } catch (error) {
             alert("訂單取消失敗");
         }

@@ -31,7 +31,7 @@ export default function Home() {
                         開始訂餐
                     </Link>
                     <Link
-                        href="/login"
+                        href="/orders"
                         className="border border-gray-300 text-gray-800 px-6 py-3 rounded-full font-medium hover:bg-white hover:shadow transition duration-300"
                     >
                         查看我的訂單

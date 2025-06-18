@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { useMqttClient } from "@/hooks/useMqttClient";
 import { editOrderStatus, getPendingOrders } from "@/app/actions/order";
 import { addNotification } from "@/app/actions/notification";
+import {
+    getOrderCheckoutTopic,
+    getCustomerCancelOrderTopic,
+    getAcceptCustomerOrderTopic,
+    getKitchenOrderTopic,
+} from "@/utils/mqttTopic";
 
 export default function PendingOrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -133,18 +139,59 @@ export default function PendingOrdersPage() {
             }
 
             // 接受訂單，傳送通知給使用者
-            const topic = ""; // TODO: 設定 MQTT 主題
+            const topic = getAcceptCustomerOrderTopic(customerId); // ✅ 顧客通知 topic
             if (notificationRes && notificationRes.id) {
-                // TODO: 準備 MQTT 訊息內容
-                // TODO: 發布 MQTT 訊息(通知)
+                const customerMessage = {
+                    id: notificationRes.id,
+                    title: "訂單",
+                    type: "order",
+                    content: `訂單 ${orderId.slice(0, 8)} 正在製作中`,
+                    read: false,
+                    time: new Date().toLocaleString(),
+                    status: "PREPARING",
+                    orderId: orderId,
+                };
+                if (publishMessage) {
+                    publishMessage(topic, JSON.stringify(customerMessage), { qos: 1 });
+                } else {
+                    console.warn("MQTT 未連線，無法傳送顧客通知");
+                }
             }
 
             // 發布訂單資料到廚房
-            const kitchenTopic = ""; // TODO: 設定廚房 MQTT 主題
+            const kitchenTopic = getKitchenOrderTopic(); // ✅ 廚房 topic
 
-            // TODO: 準備廚房訂單資料
+            const order = orders.find((o) => o.id === orderId); // 取得該筆完整訂單資料
+            if (order) {
+                const kitchenMessage = {
+                    id: order.id,
+                    customerId: order.customerId,
+                    status: "PREPARING",
+                    totalAmount: order.totalAmount,
+                    createdAt: order.createdAt,
+                    customer: {
+                        name: order.customer.name,
+                    },
+                    items: order.items.map((item) => ({
+                        id: item.id,
+                        quantity: item.quantity,
+                        specialRequest: item.specialRequest,
+                        createdAt: item.createdAt,
+                        menuItem: {
+                            name: item.menuItem.name,
+                            price: item.menuItem.price,
+                        },
+                    })),
+                };
 
-            // TODO: 發布廚房訂單資料到 MQTT
+                if (publishMessage) {
+                    publishMessage(kitchenTopic, JSON.stringify(kitchenMessage), { qos: 1 });
+                } else {
+                    console.warn("MQTT 未連線，無法傳送廚房訂單資料");
+                }
+            } else {
+                console.warn("找不到訂單資料，無法發送至廚房");
+            }
 
             if (!response.ok) {
                 alert("傳送通知失敗");
