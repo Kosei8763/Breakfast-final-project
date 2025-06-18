@@ -47,7 +47,7 @@ export default function KitchenPage() {
 
         const lastMessage = messages[messages.length - 1];
 
-        const isPrepareOrder = lastMessage.topic.include("preparing");
+        const isPrepareOrder = lastMessage.topic.includes("preparing");
 
         if (!isPrepareOrder) {
             try {
