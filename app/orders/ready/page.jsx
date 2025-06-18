@@ -110,7 +110,7 @@ export default function ReadyOrdersPage() {
         const customerId = orderData.customer?.id;
 
         // TODO: 設定 MQTT 主題
-        const topic = getStaffCompletedOrderTopic();
+        const topic = getStaffCompletedOrderTopic(customerId);
         // TODO: 準備發布交易完成的 MQTT 訊息
         const message = JSON.stringify({
             orderId: orderData.id,

@@ -130,7 +130,7 @@ export default function OrdersPage() {
             );
 
             // 發布訂單取消的 MQTT 訊息
-            const topic = getCustomerCancelOrderTopic(); // TODO: 設定 MQTT 主題
+            const topic = getCustomerCancelOrderTopic(customerId); // TODO: 設定 MQTT 主題
             // TODO: 準備訊息內容
             const message = JSON.stringify({
                 orderId,

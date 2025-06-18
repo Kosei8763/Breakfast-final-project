@@ -159,7 +159,7 @@ export default function PendingOrdersPage() {
             }
 
             // 發布訂單資料到廚房
-            const kitchenTopic = getKitchenOrderTopic(); // ✅ 廚房 topic
+            const kitchenTopic = getKitchenOrderTopic(customerId); // ✅ 廚房 topic
 
             const order = orders.find((o) => o.id === orderId); // 取得該筆完整訂單資料
             if (order) {

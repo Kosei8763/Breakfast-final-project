@@ -9,7 +9,7 @@ export async function DELETE(request, { params }) {
             where: { id: notificationId },
         })
 
-        return NextResponse.json(notification)
+        return NextResponse.json(notification, { status: 200 })
     } catch (error) {
         return NextResponse.error(new Error('刪除通知失敗'), { status: 500 })
     }

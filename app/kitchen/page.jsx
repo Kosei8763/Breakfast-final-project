@@ -122,7 +122,7 @@ export default function KitchenPage() {
                 notificationRes = await response.json();
             }
 
-            const readyNotificationTopic = getKitchenReadyOrderTopic();// TODO: 設定 MQTT 主題
+            const readyNotificationTopic = getKitchenReadyOrderTopic(customerId);// TODO: 設定 MQTT 主題
 
             // 準備發布 MQTT 訊息
             if (notificationRes && notificationRes.id) {
@@ -182,7 +182,7 @@ export default function KitchenPage() {
                             </div>
                             <div className="border-t pt-4">
                                 <ul className="space-y-2 text-sm">
-                                    {order.items.map((item, idx) => (
+                                    {order.items?.map((item, idx) => (
                                         <li key={`${item.id}-${idx}`}>
                                             <div className="flex justify-between items-start">
                                                 <span className="font-medium">
